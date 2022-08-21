@@ -46,7 +46,7 @@ class Decrypt(Crypt):
             data_to_dencrypt = file.read()
 
         fernet = Fernet(self.create_key(password))
-        decrypted_data = fernet.encrypt(data_to_dencrypt.encode('utf-8'))
+        decrypted_data = fernet.decrypt(data_to_dencrypt.encode('utf-8'))
 
         with open(self.path.rename(self.path.with_suffix('.txt')), 'w') as file:
             file.write(decrypted_data.decode('utf-8'))
