@@ -1,6 +1,12 @@
 import argparse
+import base64
+from importlib.resources import path
+import pathlib
 from getpass import getpass
 from typing import Any
+from cryptography.fernet import Fernet, InvalidToken
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import hashes
 
 
 class Password(argparse.Action):
@@ -15,20 +21,43 @@ class Crypt:
 
 
 class Encrypt(Crypt):
-    pass
+    def __init__(self, path):
+        self.path = path    
 
+    @staticmethod
+    def create_key(self, password):
+        salt = b'\xda\x01\xac\x87'
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt)
+        key = base64.urlsafe_b64encode(kdf.derive(password.encode('utf-8')))
+        return key
+
+    def execute(self, password):
+        with open(self.path, 'r') as file:
+            data_to_encrypt = file.read()
+
+        fernet = Fernet(self.create_key(password))
+        encrypted_data = fernet.encrypt(data_to_encrypt.encode('utf-8'))
+
+        with open(self.path.rename(self.path.with_suffix('.mycrypt')), 'w') as file:
+            file.write(encrypted_data.decode('utf-8'))
 
 class Decrypt(Crypt):
     pass
 
-    
+
 def correct_file(name: str):
     if not name.endswith('.txt'):
         raise argparse.ArgumentError()
     return name
 
 def main(arg):
-    pass
+    if args.mode == 'encrypt':
+        path = pathlib.Path(args.file)
+        action = Encrypt(path)
+        action.execute(args.password)
+
+    if args.mode == 'decrypt':
+        pass
 
 
 if __name__ == '__main__':
