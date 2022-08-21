@@ -22,12 +22,12 @@ class Crypt:
 
 class Encrypt(Crypt):
     def __init__(self, path):
-        self.path = path    
+        self.path = path
 
     @staticmethod
-    def create_key(self, password):
+    def create_key(password):
         salt = b'\xda\x01\xac\x87'
-        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt)
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=10)
         key = base64.urlsafe_b64encode(kdf.derive(password.encode('utf-8')))
         return key
 
@@ -41,6 +41,7 @@ class Encrypt(Crypt):
         with open(self.path.rename(self.path.with_suffix('.mycrypt')), 'w') as file:
             file.write(encrypted_data.decode('utf-8'))
 
+
 class Decrypt(Crypt):
     pass
 
@@ -49,6 +50,7 @@ def correct_file(name: str):
     if not name.endswith('.txt'):
         raise argparse.ArgumentError()
     return name
+
 
 def main(arg):
     if args.mode == 'encrypt':
@@ -64,9 +66,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Skrypt do szyfrowania i deszyfrowania plików', epilog='Enjoy!')
     parser.add_argument('-m', '--mode', choices=['encrypt', 'decrypt'], required=True, help='Wybór trybu pracy programu')
     parser.add_argument('-v', '--verbose', action='count', default=0)
-    parser.add_argument('-p', '--password', required=True, nargs='?', dest='password', action=Password,help='Hasło')
+    parser.add_argument('-p', '--password', required=True, nargs='?', dest='password', action=Password, help='Hasło')
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-f', '--file', type=correct_file, help='Lista pojedynczych plików do zaszyfrowania' )
+    group.add_argument('-f', '--file', type=correct_file, help='Lista pojedynczych plików do zaszyfrowania')
     group.add_argument('-d', '--dir', help='Folder w którym wszystkie pliki txt zostaną zaszyfrowane')
     args = parser.parse_args()
 
