@@ -58,15 +58,17 @@ def correct_file(name: str):
 
 
 def main(arg):
-    if args.mode == 'encrypt':
-        path = pathlib.Path(args.file)
-        action = Encrypt(path)
-        action.execute(args.password)
+    path = pathlib.Path(args.file)
+    try:
+        if args.mode == 'encrypt':
+            action = Encrypt(path)
+            action.execute(args.password)
 
-    if args.mode == 'decrypt':
-        path = pathlib.Path(args.file)
-        action = Decrypt(path)
-        action.execute(args.password)
+        if args.mode == 'decrypt':
+            action = Decrypt(path)
+            action.execute(args.password)
+    except InvalidToken:
+        print('Niepoprwne hasło!')
 
 
 if __name__ == '__main__':
