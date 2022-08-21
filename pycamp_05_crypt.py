@@ -17,10 +17,6 @@ class Password(argparse.Action):
 
 
 class Crypt:
-    pass
-
-
-class Encrypt(Crypt):
     def __init__(self, path):
         self.path = path
 
@@ -31,6 +27,8 @@ class Encrypt(Crypt):
         key = base64.urlsafe_b64encode(kdf.derive(password.encode('utf-8')))
         return key
 
+
+class Encrypt(Crypt):
     def execute(self, password):
         with open(self.path, 'r') as file:
             data_to_encrypt = file.read()
@@ -43,11 +41,19 @@ class Encrypt(Crypt):
 
 
 class Decrypt(Crypt):
-    pass
+    def execute(self, password):
+        with open(self.path, 'r') as file:
+            data_to_dencrypt = file.read()
+
+        fernet = Fernet(self.create_key(password))
+        decrypted_data = fernet.encrypt(data_to_dencrypt.encode('utf-8'))
+
+        with open(self.path.rename(self.path.with_suffix('.txt')), 'w') as file:
+            file.write(decrypted_data.decode('utf-8'))
 
 
 def correct_file(name: str):
-    if not name.endswith('.txt'):
+    if not name.endswith(('.txt', '.mycrypt')):
         raise argparse.ArgumentError()
     return name
 
@@ -59,7 +65,9 @@ def main(arg):
         action.execute(args.password)
 
     if args.mode == 'decrypt':
-        pass
+        path = pathlib.Path(args.file)
+        action = Decrypt(path)
+        action.execute(args.password)
 
 
 if __name__ == '__main__':
