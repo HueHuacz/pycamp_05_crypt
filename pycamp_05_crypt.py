@@ -1,6 +1,5 @@
 import argparse
 import base64
-from importlib.resources import path
 import pathlib
 from getpass import getpass
 from typing import Any
