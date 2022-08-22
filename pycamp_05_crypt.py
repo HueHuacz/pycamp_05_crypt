@@ -7,6 +7,8 @@ from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from os import walk
+from tqdm import tqdm
+from time import time
 
 
 class Password(argparse.Action):
@@ -71,7 +73,10 @@ def make_files_list(files, dirs):
 
 
 def main(arg):
-    files_list = make_files_list(args.files, args.dirs)
+    files_list = (args.files, args.dirs)
+    if args.verbose >= 3:
+        files_list = tqdm(files_list)
+
     for file in files_list:
         path = pathlib.Path(file)
 
@@ -81,9 +86,18 @@ def main(arg):
             elif args.mode == 'decrypt':
                 action = Decrypt(path)
 
+            before = time()
             action.execute(args.password)
+            after = time()
+
         except InvalidToken:
             print('Niepoprwne hasło!')
+
+            match args.verbose:
+                case 1:
+                    print(f'{path} - gotowe')
+                case 2:
+                    print(f'{path} - gotowe - trwało {after - before:.2f}s')
 
 
 if __name__ == '__main__':
