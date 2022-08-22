@@ -57,30 +57,33 @@ def correct_file(name: str):
         raise argparse.ArgumentError()
     return name
 
+
 def make_files_list(files, dirs):
     files_list = []
     if dirs:
         for root, dirs, files in walk(dirs):
             for file in files:
                 if correct_file(file):
-                    files_list.append(f'{root}\{file}')
+                    files_list.append(f'{root}/{file}')
     elif files:
         files_list = files
-    return files_list     
+    return files_list
+
 
 def main(arg):
     files_list = make_files_list(args.files, args.dirs)
-    path = pathlib.Path(files_list)
-    
-    try:
-        if args.mode == 'encrypt':
-            action = Encrypt(path)
-        elif args.mode == 'decrypt':
-            action = Decrypt(path)
+    for file in files_list:
+        path = pathlib.Path(file)
 
-        action.execute(args.password)
-    except InvalidToken:
-        print('Niepoprwne hasło!')
+        try:
+            if args.mode == 'encrypt':
+                action = Encrypt(path)
+            elif args.mode == 'decrypt':
+                action = Decrypt(path)
+
+            action.execute(args.password)
+        except InvalidToken:
+            print('Niepoprwne hasło!')
 
 
 if __name__ == '__main__':
