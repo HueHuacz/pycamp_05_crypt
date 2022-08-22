@@ -6,6 +6,7 @@ from typing import Any
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
+from os import walk
 
 
 class Password(argparse.Action):
@@ -56,17 +57,28 @@ def correct_file(name: str):
         raise argparse.ArgumentError()
     return name
 
+def make_files_list(files, dirs):
+    files_list = []
+    if dirs:
+        for root, dirs, files in walk(dirs):
+            for file in files:
+                if correct_file(file):
+                    files_list.append(f'{root}\{file}')
+    elif files:
+        files_list = files
+    return files_list     
 
 def main(arg):
-    path = pathlib.Path(args.file)
+    files_list = make_files_list(args.files, args.dirs)
+    path = pathlib.Path(files_list)
+    
     try:
         if args.mode == 'encrypt':
             action = Encrypt(path)
-            action.execute(args.password)
-
-        if args.mode == 'decrypt':
+        elif args.mode == 'decrypt':
             action = Decrypt(path)
-            action.execute(args.password)
+
+        action.execute(args.password)
     except InvalidToken:
         print('Niepoprwne hasło!')
 
@@ -77,8 +89,8 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='count', default=0)
     parser.add_argument('-p', '--password', required=True, nargs='?', dest='password', action=Password, help='Hasło')
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-f', '--file', type=correct_file, help='Lista pojedynczych plików do zaszyfrowania')
-    group.add_argument('-d', '--dir', help='Folder w którym wszystkie pliki txt zostaną zaszyfrowane')
+    group.add_argument('-f', '--files', type=correct_file, nargs='+', default=[], help='Lista pojedynczych plików do zaszyfrowania')
+    group.add_argument('-d', '--dirs', help='Folder w którym wszystkie pliki txt zostaną zaszyfrowane')
     args = parser.parse_args()
 
     main(args)
