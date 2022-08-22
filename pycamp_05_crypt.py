@@ -73,7 +73,7 @@ def make_files_list(files, dirs):
 
 
 def main(arg):
-    files_list = (args.files, args.dirs)
+    files_list = make_files_list(args.files, args.dirs)
     if args.verbose >= 3:
         files_list = tqdm(files_list)
 
@@ -93,11 +93,11 @@ def main(arg):
         except InvalidToken:
             print('Niepoprwne hasło!')
 
-            match args.verbose:
-                case 1:
-                    print(f'{path} - gotowe')
-                case 2:
-                    print(f'{path} - gotowe - trwało {after - before:.2f}s')
+        match args.verbose:
+            case 1:
+                print(f'{path} - gotowe')
+            case 2:
+                print(f'{path} - gotowe - trwało {after - before:.2f}s')
 
 
 if __name__ == '__main__':
